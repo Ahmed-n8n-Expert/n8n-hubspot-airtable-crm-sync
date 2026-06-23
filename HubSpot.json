@@ -1,0 +1,193 @@
+{
+  "name": "HubSpot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "01d7a299-56bc-48bc-b4d7-7b260c4efa8d",
+      "name": "Telegram Trigger",
+      "webhookId": "e6fff5b3-f131-43b5-ad32-3fa37e259468",
+      "credentials": {
+        "telegramApi": {
+          "id": "OAW7rJLHCD3xskc1",
+          "name": "Telegram account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ed8a0223-323c-4b21-bcbd-6453953e8041",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "1311db30-a9f3-4285-96f6-92ba320eafb1",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "authentication": "appToken",
+        "email": "={{ $json.message.from.id }}@telegram.com",
+        "additionalFields": {
+          "firstName": "={{ $('Telegram Trigger').item.json.message.chat.first_name }}",
+          "lastName": "={{ $('Telegram Trigger').item.json.message.chat.last_name }}",
+          "message": "={{ $('Telegram Trigger').item.json.message.text }}"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        -96
+      ],
+      "id": "15b9a67d-e3ab-4893-b311-89100abc5256",
+      "name": "Create or update a contact",
+      "credentials": {
+        "hubspotAppToken": {
+          "id": "6YpD61HXn5Q69O2M",
+          "name": "HubSpot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=أهلاً يا {{ $('Telegram Trigger').item.json.message.from.first_name }} تم استلام رسالتك بنجاح وفريقنا هيتواصل معاك في أقرب وقت.\"",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        832,
+        -96
+      ],
+      "id": "f6edab31-0fc2-4f23-8df4-a46d5fdb88e0",
+      "name": "Send a text message",
+      "webhookId": "5eb5fd53-5868-4770-83ea-982679fab2f1",
+      "credentials": {
+        "telegramApi": {
+          "id": "OAW7rJLHCD3xskc1",
+          "name": "Telegram account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "decoration0101630@gmail.com",
+        "subject": "=عميل جديد سجل من التيلجرام  {{ $('Telegram Trigger').item.json.message.from.first_name }}",
+        "emailType": "text",
+        "message": "=لقد قام عميل جديد بالتواصل معك عبر بوت التليجرام، وإليك تفاصيله:  الاسم: {{ $node[\"Telegram Trigger\"].json[\"message\"][\"from\"][\"first_name\"] }} {{ $node[\"Telegram Trigger\"].json[\"message\"][\"from\"][\"last_name\"] }}  نص الرسالة: {{ $node[\"Telegram Trigger\"].json[\"message\"][\"text\"] }}  رقم تعريف التليجرام (ID): {{ $node[\"Telegram Trigger\"].json[\"message\"][\"from\"][\"id\"] }}  تم تسجيل هذا العميل تلقائياً في حساب HubSpot الخاص بك.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "0739a3c8-0b07-4423-b00a-3e020f6115d9",
+      "name": "Send a message",
+      "webhookId": "da0f4788-d863-4743-a13f-da5d7856bd52",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "pgyqMgyBHxGinR6y",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Create or update a contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create or update a contact": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "d80968b7-e5b4-45cb-bc4a-295acefcf01c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9aa2603dda94482e4b81f20d27acd5b407e83ff0532377f7ddea8d1bbabeeeee"
+  },
+  "id": "6qgkSUkX4TTMIi5RzeIFy",
+  "tags": []
+}
